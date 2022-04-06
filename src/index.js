@@ -1,12 +1,33 @@
 const express = require("express");
+const cors = require("cors");
 
 const { v4: uuid } = require("uuid");
 
 const app = express();
-
 app.use(express.json());
+app.use(cors());
 
 const repositories = [];
+
+function checksRepositoryExists(request, response, next) {
+  const { id } = request.params;
+
+  const repository = repositories.find((repository) => repository.id === id);
+
+  if (!repository) {
+    return response.status(404).json({ error: "Repository not found!" });
+  }
+
+  const uuidValidate = validate(id, 4);
+
+  if (!uuidValidate) {
+    return response.status(401).json({ error: "Id not available" });
+  }
+
+  request.repository = repository;
+
+  return next;
+}
 
 app.get("/repositories", (request, response) => {
   return response.json(repositories);
@@ -35,21 +56,13 @@ app.post("/repositories", (request, response) => {
   return response.status(201).json(repository);
 });
 
-app.put("/repositories/:id", (request, response) => {
-  const { id } = request.params;
-  const updatedRepository = request.body;
+app.put("/repositories/:id", checksRepositoryExists, (request, response) => {
+  const { repository } = request;
+  const { title, url, techs } = request.body;
 
-  repositoryIndex = repositories.findindex(
-    (repository) => repository.id === id
-  );
-
-  if (repositoryIndex < 0) {
-    return response.status(404).json({ error: "Repository not found" });
-  }
-
-  const repository = { ...repositories[repositoryIndex], ...updatedRepository };
-
-  repositories[repositoryIndex] = repository;
+  repository.title = title;
+  repository.url = url;
+  repository.techs = techs;
 
   return response.json(repository);
 });
