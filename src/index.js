@@ -26,7 +26,7 @@ function checksRepositoryExists(request, response, next) {
 
   request.repository = repository;
 
-  return next;
+  return next();
 }
 
 app.get("/repositories", (request, response) => {
@@ -49,13 +49,15 @@ app.post("/repositories", (request, response) => {
   return response.status(201).json(repository);
 });
 
-app.put("/repositories/:id", checksRepositoryExists, (request, response) => {
-  const { repository } = request;
+app.put("/repositories/:id", (request, response) => {
+  const { id } = request.params;
   const { title, url, techs } = request.body;
 
-  repository.title = title;
-  repository.url = url;
-  repository.techs = techs;
+  const repository = repositories.find((repository) => repository.id === id);
+
+  if (title) repository.title = title;
+  if (url) repository.url = url;
+  if (techs) repository.techs = techs;
 
   return response.json(repository);
 });
