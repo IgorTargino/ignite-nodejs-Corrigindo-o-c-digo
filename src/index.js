@@ -55,6 +55,10 @@ app.put("/repositories/:id", (request, response) => {
 
   const repository = repositories.find((repository) => repository.id === id);
 
+  if (!repository) {
+    return response.status(404).json({ error: "Repository not found!" });
+  }
+
   if (title) repository.title = title;
   if (url) repository.url = url;
   if (techs) repository.techs = techs;
